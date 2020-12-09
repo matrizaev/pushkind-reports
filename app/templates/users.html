@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+
+{% block content %}
+{% if current_user.role.name == 'admin' %}
+	<div class="container border-bottom">
+		<div class="row">
+			<div class="col text-right">
+				<button class="btn btn-link" type="button" data-toggle="collapse" data-target="#departmentFormCollapse" aria-expanded="false" aria-controls="departmentFormCollapse">
+					Управление отделами
+				</button>
+			</div>
+		</div>
+		<div class="collapse" id="departmentFormCollapse">
+			<form method="post" action="{{ url_for('main.ModifyDepartment') }}">
+				{{ department_form.csrf_token }}
+				<div class="form-group row">
+					<div class="col">
+						{{ department_form.department_name(class_ = 'form-control', list='departmentList', placeholder='Введите название отдела...') }}
+						<datalist id="departmentList">
+						{% for department in departments %}
+							<option>{{ department.name }}</option>
+						{% endfor %}
+						</datalist>
+					</div>
+				</div>
+				<div class="form-group row">
+					<div class="col">
+						{{ department_form.create(class_ = 'btn btn-primary') }}
+						{{ department_form.delete(class_ = 'btn btn-danger') }}
+					</div>
+				</div>
+			</form>
+		</div>
+	</div>
+
+	<div class="container">
+		<div class="row my-2">
+			<div class="col">
+				<span class="font-weight-bold">ПОЛЬЗОВАТЕЛИ</span>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col">
+				<input class="form-control" id="departmentsFilter" type="text" placeholder="Фильтр..">
+			</div>
+		</div>
+		<div class = "departmentInfo container border my-2 departmentInfo" method="post">
+			<div class="row my-2">
+				<div class="col">
+					<span class="font-weight-bold">Без отдела</span>
+				</div>
+			</div>
+			{% include '_user.header.html' %}
+			{% for user in users %}
+				{% include '_user.html' %}
+			{% endfor %}
+		</div>
+		{% for department in departments %}
+			{% include '_department.html' %}
+		{% endfor %}
+	</div>
+{% else %}
+	<div class="container departmentInfo">
+		<div class="row my-2">
+			<div class="col">
+				<span class="font-weight-bold">{{current_user.department.name}}</span>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col">
+				<input class="form-control" id="usersFilter" type="text" placeholder="Фильтр..">
+			</div>
+		</div>
+		{% include '_user.header.html' %}
+		{% for user in current_user.department.users %}
+			{% include '_user.html' %}
+		{% endfor %}
+	</div>
+{% endif %}
+{% endblock %}
+{% block scripts %}
+
+<script>
+	$(document).ready(function(){
+		jQuery.fn.any = function(filter){ 
+		  for (i=0 ; i<this.length ; i++) {
+			 if (filter.call(this[i])) return true;
+		  }
+		  return false;
+		};
+	{% if current_user.role.name == 'admin' %}
+		$("#departmentsFilter").on("keyup", function() {
+			let value = $(this).val().toLowerCase();
+			$(".departmentInfo").filter(function() {
+				let hide = false;
+				
+				$(this).find(".userInfo").filter(function(){
+					let show = $(this).find("input").any(function(){return $(this).val().toLowerCase().indexOf(value) > -1;});
+					show = show || $(this).find("select option:selected").any(function(){return $(this).text().toLowerCase().indexOf(value) > -1;});
+					$(this).toggle(show);
+					hide = hide || show;
+				});
+				$(this).toggle(hide);
+			});
+		});
+		let departmentName = "";
+		$(".departmentName").focus(function() {
+			$(this).removeClass('form-control-plaintext');
+			$(this).addClass ('form-control');
+			departmentName = $(this).val();
+		});
+		$('.departmentName').focusout(function() {
+			if ($(this).val() != departmentName){
+				$(this).closest("form").submit();
+			}
+			$(this).removeClass ('form-control');
+			$(this).addClass('form-control-plaintext');
+		});
+	{% else %}
+		$("#usersFilter").on("keyup", function() {
+			let value = $(this).val().toLowerCase();
+			$(".userInfo").filter(function() {
+				$(this).toggle(
+					$(this).find("input").any(function(){return $(this).val().toLowerCase().indexOf(value) > -1;})
+				)
+			});
+		});
+	{% endif %}
+	});
+</script>
+{%endblock %}

@@ -1,0 +1,10 @@
+<div class = "departmentInfo container border my-2" method="post">
+	<form method="post" action="{{url_for('main.ModifyDepartment', dep_id=department['id'])}}">
+		{{ department_form.csrf_token }}
+		{{ department_form.department_name(value = department['name'], class_ = 'departmentName text-primary form-control-plaintext') }}
+	</form>
+	{% include '_user.header.html' %}
+	{% for user in department['users'] %}
+		{% include '_user.html' %}
+	{% endfor %}
+</div>

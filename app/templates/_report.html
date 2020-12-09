@@ -1,0 +1,55 @@
+{% if current_user.role.name == 'employee' and report_task['completed'] != True %}
+<form class = "container border my-2" method="post" action="{{ url_for('main.ModifyReport', rt_id = report_task['id']) }}">
+	<div class="row">
+		<div class="col-sm overflow-hidden">
+			<div class="form-check">
+				{{ form.csrf_token }}
+				{{ form.completed(class_ = 'form-check-input', value=report_task['measurement']) }}
+				{{ form.completed.label(class_='form-check-label') }}
+			</div>
+		</div>
+		<div class="col-sm overflow-hidden">
+			{{ report_task['name'] }}
+		</div>
+		<div class="col-sm overflow-hidden">
+			{{ form.measurement(class_ = 'form-control', value=report_task['measurement']) }}
+		</div>
+		<div class="col-sm overflow-hidden">
+			{{ report_task['metric'] }}
+		</div>
+		<div class="col-sm overflow-hidden">
+			{{ form.comment(class_ = 'form-control', value=report_task['comment']) }}
+		</div>
+		<div class="col-sm overflow-hidden">
+			<button type="submit" name="submit" class="btn btn-success">
+				<img class="octicon" src="http://cabinet.pushkind.com/static/octicons/check.svg" alt="Сохранить">
+			</button>
+		</div>
+	</div>
+</form>
+{% else %}
+<div class = "container border my-2">
+	<div class="row">
+		<div class="col-sm overflow-hidden">
+			<span class="badge {%if report_task['completed']%}badge-success{%else%}badge-secondary{%endif%}">
+				<img class="octicon" src="http://cabinet.pushkind.com/static/octicons/check.svg">
+			</span>
+		</div>
+		<div class="col-sm overflow-hidden">
+			{{ report_task['name'] }}
+		</div>
+		<div class="col-sm overflow-hidden">
+			{{ report_task['measurement'] }}
+		</div>
+		<div class="col-sm overflow-hidden">
+			{{ report_task['metric'] }}
+		</div>
+		<div class="col-sm overflow-hidden">
+			{{ report_task['comment'] }}
+		</div>
+		<div class="col-sm overflow-hidden">
+			&nbsp;
+		</div>
+	</div>
+</div>
+{% endif %}

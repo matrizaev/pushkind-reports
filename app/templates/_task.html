@@ -1,0 +1,34 @@
+{% set editable = current_user.role.name in ['admin','manager'] %}
+<form method="post" class="container my-2 border-top taskInfo" action="{{ url_for('main.ModifyTask', task_id = task['id']) }}">
+	<div class="row my-2">
+		<div class="col-sm overflow-hidden">
+			{{ task_form.csrf_token }}
+			<span >{{task_form.task_name.label(class_='d-sm-none font-weight-bold') }}</span>
+			{{ task_form.task_name(class_ = 'form-control', value = task['name'] if task['name'], disabled = not editable) }}
+		</div>
+		<div class="col-sm overflow-hidden">
+			<span >{{task_form.metric.label(class_='d-sm-none font-weight-bold') }}</span>
+			{{ task_form.metric(class_ = 'form-control', value = task['metric'] if task['metric'], disabled = not editable) }}
+		</div>
+		<div class="col-sm overflow-hidden">
+			<span >{{task_form.department.label(class_='d-sm-none font-weight-bold') }}</span>
+			{% set z = task_form.department.process_data(task['dep_id'] if task['dep_id'] else 0) %}
+			{{ task_form.department(class_ = 'form-control', disabled = not editable) }}
+		</div>
+		<div class="col-sm overflow-hidden">
+			{% if editable %}
+			<button type="submit" name="submit" class="btn btn-success">
+				<img class="octicon" src="http://cabinet.pushkind.com/static/octicons/check.svg" alt="Сохранить">
+			</button>
+			<a role="button" class="btn btn-danger" href="{{ url_for('main.DeleteTask', task_id = task['id']) }}" onclick="return confirm('Удалить задачу?')">
+				<img class="octicon" src="http://cabinet.pushkind.com/static/octicons/x.svg" alt="Удалить">
+			</a>
+			{%endif%}
+			{% if current_user.role.name != 'admin' %}
+				<button type="button" class="btn btn-warning assignTaskButton" data-toggle="modal" data-target="#assignTaskModal" data-task_id="{{task['id']}}" data-task_name="{{task['name']}}">
+					<img class="octicon" src="http://cabinet.pushkind.com/static/octicons/plus.svg" alt="Назначить">
+				</button>
+			{%endif%}
+		</div>
+	</div>
+</form>

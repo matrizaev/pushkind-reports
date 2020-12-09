@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+
+{% block content %}
+{% if current_user.role.name in ['admin','manager'] %}
+	<div class="container border-bottom">
+		<div class="row">
+			<div class="col text-right">
+				<button class="btn btn-link" type="button" data-toggle="collapse" data-target="#taskFormCollapse" aria-expanded="false" aria-controls="taskFormCollapse">
+					Управление задачами
+				</button>
+			</div>
+		</div>
+		<div class="collapse" id="taskFormCollapse">
+			<form method="post" action="{{ url_for('main.ModifyTask') }}">
+				{{ task_form.csrf_token }}
+				<div class="form-group row">
+					{{ task_form.task_name.label(class_ = "col-md-2 col-form-label") }}
+					<div class="col-md-10">
+						{{ task_form.task_name(class_ = 'form-control') }}
+					</div>
+				</div>
+				<div class="form-group row">
+					{{ task_form.metric.label(class_ = "col-md-2 col-form-label") }}
+					<div class="col-md-10">
+						{{ task_form.metric(class_ = 'form-control') }}
+					</div>
+				</div>
+				<div class="form-group row">
+					{{ task_form.department.label(class_ = "col-md-2 col-form-label") }}
+					<div class="col-md-10">
+						{{ task_form.department(class_ = 'form-control') }}
+					</div>
+				</div>
+				<div class="form-group row">
+					<div class="col">
+						{{ task_form.submit(class_ = 'btn btn-primary') }}
+					</div>
+				</div>
+			</form>
+		</div>
+	</div>
+{% endif %}
+<div class="container border-bottom">
+	<div class="row my-2">
+		<div class="col">
+			<span class="font-weight-bold">ЗАДАЧИ</span>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col">
+			<input class="form-control" id="tasksFilter" type="text" placeholder="Фильтр..">
+		</div>
+	</div>
+	<div class="row d-none d-sm-flex font-weight-bold px-3">
+		<div class="col overflow-hidden">
+			Название
+		</div>
+		<div class="col overflow-hidden">
+			Метрика
+		</div>
+		<div class="col overflow-hidden">
+			Отдел
+		</div>
+		<div class="col overflow-hidden">
+			&nbsp;
+		</div>
+	</div>
+	{% for task in tasks %}
+		{% include '_task.html' %}
+	{% endfor %}
+</div>
+
+{% if current_user.role.name in ['employee','manager'] %}
+	<div class="modal fade" id="assignTaskModal" tabindex="-1" role="dialog" aria-labelledby="assignTaskLabel" aria-hidden="true">
+		<div class="modal-dialog" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="assignTaskLabel">Назначить задачу</h5>
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+				</div>
+				<form method="POST" action="{{ url_for('main.AssignTask', task_id = 0) }}" id="assignTaskForm">
+					<div class="modal-body">
+						<h6 id="assignTaskName"></h5>
+						{{ assign_form.csrf_token(id='editCSRF') }}
+						<div class="form-group">
+							{{ assign_form.user.label }}
+							{{ assign_form.user(class_ = 'form-control') }}
+						</div>
+						<div class="form-group">
+							{{ assign_form.measurement.label }}
+							{{ assign_form.measurement(class_ = 'form-control') }}
+						</div>
+						<div class="form-group">
+							{{ assign_form.comment.label }}
+							{{ assign_form.comment(class_ = 'form-control') }}
+						</div>
+						<div class="form-group">
+							{{ assign_form.date.label }}
+							{{ assign_form.date(class_ = 'form-control') }}
+						</div>
+						<div class="form-check">
+							{{ assign_form.completed(class_ = 'form-check-input') }}
+							{{ assign_form.completed.label(class_= 'form-check-label') }}
+						</div>
+					</div>
+					<div class="modal-footer">
+						{{ assign_form.submit(class_ = 'btn btn-primary') }}
+						<button type="button" class="btn btn-secondary" data-dismiss="modal">Закрыть</button>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+{% endif %}
+
+
+{% endblock %}
+
+{% block scripts %}
+
+<script>
+	$(document).ready(function(){
+		jQuery.fn.any = function(filter){ 
+		  for (i=0 ; i<this.length ; i++) {
+			 if (filter.call(this[i])) return true;
+		  }
+		  return false;
+		};
+		$(".assignTaskButton").click(function(){
+			let taskId = $(this).data("task_id");
+			let url = $("#assignTaskForm").attr("action");
+			url = url.replace("0", taskId);
+			$("#assignTaskForm").attr("action", url);
+			let taskName = $(this).data("task_name");
+			$("#assignTaskName").text(taskName);
+		});
+		$("#tasksFilter").on("keyup", function() {
+			let value = $(this).val().toLowerCase();
+			$(".taskInfo").filter(function() {
+				let show = $(this).find("input").any(function(){return $(this).val().toLowerCase().indexOf(value) > -1;});
+				show = show || $(this).find("select option:selected").any(function(){return $(this).text().toLowerCase().indexOf(value) > -1;});
+				$(this).toggle(show);		
+			});
+		});
+	});
+</script>
+{%endblock %}

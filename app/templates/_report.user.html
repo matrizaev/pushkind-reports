@@ -1,0 +1,17 @@
+<div class="container border-bottom my-2 bg-light reportInfo">
+	<div class="row font-weight-bold">
+		<div class="col-sm overflow-hidden">
+			{{ user['name']  }}
+		</div>
+		<div class="col-sm overflow-hidden">
+			{{ user['email']  }}
+		</div>
+		<div class="col-sm overflow-hidden">
+			{{ user['department']['name']  }}
+		</div>
+	</div>
+	{% set report = user.reports.filter_by(date = filter_date).first() %}
+	{% for report_task in report.tasks %}
+		{% include '_report.html' %}
+	{% endfor %}
+</div>

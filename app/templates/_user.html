@@ -1,0 +1,36 @@
+{% set editable = current_user.role.name == 'admin' or user['id'] == current_user.id %}
+<form method="post" class="container my-2 border-top userInfo" action="{{ url_for('main.ModifyUser', user_id = user['id']) }}">
+	<div class="row my-2">
+		<div class="col-sm overflow-hidden">
+			{{ user_form.csrf_token }}
+			<span class="d-sm-none font-weight-bold">Электронная почта</span>
+			<input class="form-control-plaintext" type="text" value="{{ user['email'] }}" disabled>
+		</div>
+		<div class="col-sm overflow-hidden">
+			<span >{{user_form.full_name.label(class_='d-sm-none font-weight-bold') }}</span>
+			{{ user_form.full_name(class_ = 'form-control', value = user['name'] if user['name'], disabled = not editable) }}
+		</div>
+		<div class="col-sm overflow-hidden">
+			<span >{{user_form.role.label(class_='d-sm-none font-weight-bold') }}</span>
+			{% set z = user_form.role.process_data(user.role.value) %}
+			{{ user_form.role(class_ = 'form-control', disabled = not (editable and current_user.role.name == 'admin')) }}
+		</div>
+		<div class="col-sm overflow-hidden">
+			<span >{{user_form.department.label(class_='d-sm-none font-weight-bold') }}</span>
+			{% set z = user_form.department.process_data(user['dep_id'] if user['dep_id'] else 0) %}
+			{{ user_form.department(class_ = 'form-control', disabled = not (editable  and current_user.role.name == 'admin')) }}
+		</div>
+		<div class="col-sm overflow-hidden">
+			{% if editable %}
+			<button type="submit" name="submit" class="btn btn-success">
+				<img class="octicon" src="http://cabinet.pushkind.com/static/octicons/check.svg" alt="Сохранить">
+			</button>
+			<a role="button" class="btn btn-danger" href="{{ url_for('main.DeleteUser', user_id = user['id']) }}" onclick="return confirm('Удалить пользователя?')">
+				<img class="octicon" src="http://cabinet.pushkind.com/static/octicons/x.svg" alt="Удалить">
+			</a>
+			{% else %}
+			&nbsp;
+			{%endif%}
+		</div>
+	</div>
+</form>
